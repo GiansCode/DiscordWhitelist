@@ -2,6 +2,7 @@ package io.alerium.discordwhitelist.cache;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import io.alerium.discordwhitelist.WhitelistPlugin;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -11,9 +12,9 @@ public final class RequestCache {
 
     private final Cache<String, UUID> cache;
 
-    public RequestCache() {
+    public RequestCache(final WhitelistPlugin plugin) {
         this.cache = CacheBuilder.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .expireAfterWrite(plugin.getConfig().getInt("settings.cacheExpiry"), TimeUnit.MINUTES)
                 .build();
     }
 

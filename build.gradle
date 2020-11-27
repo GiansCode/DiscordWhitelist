@@ -2,7 +2,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
 	id "com.github.johnrengelman.shadow" version "6.0.0"
-	id "me.bristermitten.pdm" version "0.0.28"
 	id "java"
 }
 
@@ -17,8 +16,8 @@ repositories {
 }
 
 dependencies {
-	pdm("net.dv8tion:JDA:4.2.0_222") { exclude module: "opus-java" }
-	pdm "com.zaxxer:HikariCP:3.4.5"
+	implementation "net.dv8tion:JDA:4.2.0_222"
+	implementation "com.zaxxer:HikariCP:3.4.5"
 
 	compileOnly "com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT"
 }
@@ -26,8 +25,6 @@ dependencies {
 shadowJar {
 	archiveFileName.set("DiscordWhitelist-${project.version}.jar")
 }
-
-shadowJar.dependsOn project.tasks.getByName("pdm")
 
 processResources {
 	from(sourceSets.main.resources.srcDirs) {

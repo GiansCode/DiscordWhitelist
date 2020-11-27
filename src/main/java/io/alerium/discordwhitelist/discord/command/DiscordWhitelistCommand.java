@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.UUID;
 
 public final class DiscordWhitelistCommand extends ListenerAdapter {
@@ -28,8 +28,13 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
     @Override
     public void onGuildMessageReceived(final GuildMessageReceivedEvent event) {
         final TextChannel channel = event.getChannel();
+        if (!channel.getId().equals(discordProvider.getLinkedChannel().getId())) {
+            return;
+        }
+
         final Guild guild = event.getGuild();
-        final String content = event.getMessage().getContentRaw();
+        final Message eventMessage = event.getMessage();
+        final String content = eventMessage.getContentRaw();
         if (!content.startsWith(discordProvider.getCommandPrefix() + "whitelist") && !content.startsWith(guild.getSelfMember().getAsMention())) {
             return;
         }
@@ -45,8 +50,7 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
 
         if (arguments.length < 2) {
             final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.invalidArguments")).build();
-
-            sendAndDeleteAfter(msg, channel);
+            sendAndDeleteAfter(eventMessage, msg, channel);
             return;
         }
 
@@ -55,21 +59,20 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
 
         if (minecraftUserIdentifier == null) {
             final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.invalidCode")).build();
-
-            sendAndDeleteAfter(msg, channel);
+            sendAndDeleteAfter(eventMessage, msg, channel);
             return;
         }
 
 
     }
 
-    private void sendAndDeleteAfter(final Message message, final TextChannel channel) {
-        channel.sendMessage(message).queue();
+    private void sendAndDeleteAfter(final Message eventMessage, final Message message, final TextChannel channel) {
+        final Message msg = channel.sendMessage(message).complete();
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                channel.deleteMessages(Collections.singletonList(message)).queue();
+                channel.deleteMessagesByIds(Arrays.asList(eventMessage.getId(), msg.getId())).queue();
             }
         }.runTaskLater(plugin, deletionTimer);
     }
