@@ -1,0 +1,36 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+	id "com.github.johnrengelman.shadow" version "6.0.0"
+	id "me.bristermitten.pdm" version "0.0.28"
+	id "java"
+}
+
+group = "io.alerium.discordwhitelist"
+version = "0.0.1-Alpha"
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.destroystokyo.com/repository/maven-public/" }
+	maven { url "https://oss.sonatype.org/content/groups/public/" }
+	maven { url "https://jcenter.bintray.com" }
+}
+
+dependencies {
+	pdm("net.dv8tion:JDA:4.2.0_222") { exclude module: "opus-java" }
+	pdm "com.zaxxer:HikariCP:3.4.5"
+
+	compileOnly "com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT"
+}
+
+shadowJar {
+	archiveFileName.set("DiscordWhitelist-${project.version}.jar")
+}
+
+shadowJar.dependsOn project.tasks.getByName("pdm")
+
+processResources {
+	from(sourceSets.main.resources.srcDirs) {
+		filter ReplaceTokens, tokens: [version: version]
+	}
+}
