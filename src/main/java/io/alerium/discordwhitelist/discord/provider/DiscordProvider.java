@@ -15,7 +15,6 @@ import java.util.logging.Level;
 public final class DiscordProvider {
 
     private final WhitelistPlugin plugin;
-    private JDA jdaProvider;
 
     private Guild guild;
     private TextChannel channel;
@@ -30,10 +29,10 @@ public final class DiscordProvider {
     @SuppressWarnings("ConstantConditions")
     public void initiateBot() {
         final FileConfiguration config = plugin.getConfig();
-        JDA result = null;
+        JDA jdaProvider = null;
 
         try {
-            result = JDABuilder.createDefault(config.getString("settings.token"))
+            jdaProvider = JDABuilder.createDefault(config.getString("settings.token"))
                     .setStatus(OnlineStatus.ONLINE)
                     .build().awaitReady();
         } catch (final LoginException | InterruptedException ex) {
@@ -41,23 +40,17 @@ public final class DiscordProvider {
             plugin.getPluginLoader().disablePlugin(plugin);
         }
 
-        if (result == null)
+        if (jdaProvider == null)
             throw new RuntimeException("The JDA was null, failed to continue initialization!");
-
-        this.jdaProvider = result;
 
         this.guild = jdaProvider.getGuildById(config.getString("settings.guildId"));
         this.channel = jdaProvider.getTextChannelById(config.getString("settings.textChannelId"));
 
         this.commandPrefix = config.getString("settings.commandPrefix");
 
-        this.jdaProvider.addEventListener(
+        jdaProvider.addEventListener(
                 new DiscordWhitelistCommand(plugin, this)
         );
-    }
-
-    public JDA getJdaProvider() {
-        return this.jdaProvider;
     }
 
     public Guild getLinkedGuild() {

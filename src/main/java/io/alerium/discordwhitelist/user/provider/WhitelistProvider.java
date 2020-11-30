@@ -1,9 +1,11 @@
 package io.alerium.discordwhitelist.user.provider;
 
+import io.alerium.discordwhitelist.Placeholders;
+import io.alerium.discordwhitelist.WhitelistPlugin;
 import io.alerium.discordwhitelist.discord.provider.DiscordProvider;
 import io.alerium.discordwhitelist.user.WhitelistCache;
+import io.alerium.discordwhitelist.user.data.DatabaseProvider;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
-import net.dv8tion.jda.api.entities.Member;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -15,11 +17,23 @@ import java.util.concurrent.ExecutionException;
  */
 public final class WhitelistProvider {
 
-    private final WhitelistCache whitelistCache = new WhitelistCache();
-    private final DiscordProvider discordProvider;
+    private final DatabaseProvider databaseProvider;
+    private final WhitelistCache whitelistCache;
 
-    public WhitelistProvider(final DiscordProvider discordProvider) {
-        this.discordProvider = discordProvider;
+    public WhitelistProvider(final WhitelistPlugin plugin, final DiscordProvider discordProvider) {
+        this.databaseProvider = new DatabaseProvider(plugin, discordProvider);
+        this.whitelistCache = new WhitelistCache(databaseProvider);
+    }
+
+    /**
+     * Updates the user to database
+     *
+     * @param user Desired user to be updated
+     */
+    public void updateDatabaseUser(final WhitelistUser user) {
+        this.databaseProvider.setUser(user);
+        this.whitelistCache.getCache().put(new KeyProvider().of(user.getMinecraftUUID()), user);
+        updateUserInPlaceholderCache(user);
     }
 
     /**
@@ -27,12 +41,15 @@ public final class WhitelistProvider {
      *
      * @param uuid User's Minecraft UUID
      * @return boolean (true/false) of the user's status, or false if invalid user
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public boolean isWhitelisted(final UUID uuid) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(uuid));
-        if (user != null)
-            return user.isWhitelisted();
+    public boolean isWhitelisted(final UUID uuid) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(uuid));
+            if (user != null)
+                return user.isWhitelisted();
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
 
         return false;
     }
@@ -42,15 +59,23 @@ public final class WhitelistProvider {
      *
      * @param uuid   User's Minecraft UUID
      * @param status new status to be set
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public void setWhitelisted(final UUID uuid, final boolean status) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(uuid));
-        if (user == null)
-            return;
+    public void setWhitelisted(final UUID uuid, final boolean status) {
+        try {
+            final KeyProvider key = new KeyProvider().of(uuid);
+            final WhitelistUser user = this.whitelistCache.getCache().get(key);
+            if (user == null)
+                return;
 
-        user.setWhitelistedStatus(status);
-        // Update DB User
+            user.setMinecraftUUID(uuid);
+            user.setWhitelistedStatus(status);
+
+            databaseProvider.setUser(user);
+            this.whitelistCache.getCache().put(key, user);
+            updateUserInPlaceholderCache(user);
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -58,14 +83,17 @@ public final class WhitelistProvider {
      *
      * @param discordID User's Discord ID
      * @return The OfflinePlayer object associated to the ID or null
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public OfflinePlayer getMinecraftAccount(final long discordID) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(discordID));
-        if (user == null)
-            return null;
+    public OfflinePlayer getMinecraftAccount(final long discordID) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(discordID));
+            if (user != null)
+                return Bukkit.getOfflinePlayer(user.getMinecraftUUID());
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
 
-        return Bukkit.getOfflinePlayer(user.getMinecraftUUID());
+        return null;
     }
 
     /**
@@ -73,14 +101,17 @@ public final class WhitelistProvider {
      *
      * @param minecraftUUID User's Minecraft UUID
      * @return The associated Discord ID or 0 if not present
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public long getDiscordID(final UUID minecraftUUID) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
-        if (user == null)
-            return 0;
+    public long getDiscordID(final UUID minecraftUUID) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
+            if (user != null)
+                return user.getDiscordID();
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
 
-        return user.getDiscordID();
+        return 0;
     }
 
     /**
@@ -88,22 +119,23 @@ public final class WhitelistProvider {
      *
      * @param minecraftUUID User's Minecraft UUID
      * @return The associated Discord account's name or null if not present
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public String getDiscordName(final UUID minecraftUUID) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
-        if (user == null)
-            return null;
+    public String getDiscordName(final UUID minecraftUUID) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
+            if (user == null)
+                return null;
 
-        final long userID = user.getDiscordID();
-        if (userID == 0)
-            return null;
+            final long userID = user.getDiscordID();
+            if (userID == 0)
+                return null;
 
-        final Member discordMember = this.discordProvider.getLinkedGuild().getMemberById(userID);
-        if (discordMember == null)
-            return null;
+            return user.getDiscordName();
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
 
-        return discordMember.getUser().getName();
+        return null;
     }
 
     /**
@@ -111,22 +143,23 @@ public final class WhitelistProvider {
      *
      * @param minecraftUUID User's Minecraft UUID
      * @return The associated Discord account's discriminator or null if not present
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public String getDiscordDiscriminator(final UUID minecraftUUID) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
-        if (user == null)
-            return null;
+    public String getDiscordDiscriminator(final UUID minecraftUUID) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
+            if (user == null)
+                return null;
 
-        final long userID = user.getDiscordID();
-        if (userID == 0)
-            return null;
+            final long userID = user.getDiscordID();
+            if (userID == 0)
+                return null;
 
-        final Member discordMember = this.discordProvider.getLinkedGuild().getMemberById(userID);
-        if (discordMember == null)
-            return null;
+            return user.getDiscordDiscriminator();
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
 
-        return discordMember.getUser().getAsTag();
+        return null;
     }
 
     /**
@@ -134,14 +167,39 @@ public final class WhitelistProvider {
      *
      * @param minecraftUUID User's Minecraft UUID
      * @return The time the user was whitelisted or 0 if not present
-     * @throws ExecutionException if the user could not be retrieved
      */
-    public long getTimeWhitelisted(final UUID minecraftUUID) throws ExecutionException {
-        final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
-        if (user == null)
-            return 0;
+    public long getTimeWhitelisted(final UUID minecraftUUID) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
+            if (user != null)
+                return user.getTimeWhitelisted();
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
 
-        return user.getTimeWhitelisted();
+        return 0;
+    }
+
+    /**
+     * Returns the WhitelistUser object for given user, or null
+     *
+     * @param minecraftUUID User's Minecraft UUID
+     * @return The WhitelistUser object for specified user or null
+     */
+    public WhitelistUser getWhitelistUserByUUID(final UUID minecraftUUID) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getCache().get(new KeyProvider().of(minecraftUUID));
+            if (user != null)
+                return user;
+        } catch (final ExecutionException ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private void updateUserInPlaceholderCache(final WhitelistUser user) {
+        Placeholders.updateUser(user);
     }
 
 }

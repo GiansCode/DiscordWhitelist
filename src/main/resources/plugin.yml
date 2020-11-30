@@ -3,3 +3,4 @@ version: @version@
 main: io.alerium.discordwhitelist.WhitelistPlugin
 api-version: 1.13
 author: Frcsty
+depend: ["PlaceholderAPI"]

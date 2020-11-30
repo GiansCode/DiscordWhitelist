@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class Replace {
+public final class ReplaceUtils {
 
     public static List<String> replaceList(final List<String> input, String... values) {
         if (values == null) {

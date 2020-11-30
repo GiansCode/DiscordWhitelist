@@ -10,19 +10,30 @@ version = "0.0.1-Alpha"
 
 repositories {
 	mavenCentral()
+	maven { url "http://repo.extendedclip.com/content/repositories/placeholderapi/" }
 	maven { url "https://repo.destroystokyo.com/repository/maven-public/" }
 	maven { url "https://oss.sonatype.org/content/groups/public/" }
 	maven { url "https://jcenter.bintray.com" }
+	maven { url "https://repo.mattstudios.me/artifactory/public" }
+	maven { url "https://dl.bintray.com/rest-faucet/maven" }
 }
 
 dependencies {
 	implementation "net.dv8tion:JDA:4.2.0_222"
 	implementation "com.zaxxer:HikariCP:3.4.5"
+	implementation "me.mattstudios:mf-msg-bukkit:2.0.2"
+	implementation "me.mattstudios.utils:matt-framework:1.4"
+	implementation("rest.faucet:task:1.0") { exclude group: "org.spigotmc" }
 
+	compileOnly "me.clip:placeholderapi:2.10.9"
 	compileOnly "com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT"
 }
 
 shadowJar {
+	relocate "me.mattstudios.mf", "${group}.libs.mf"
+	relocate "com.zaxxer.hikari", "${group}.libs.hikari"
+	relocate "net.dv8tion.jda", "${group}.libs.jda"
+
 	archiveFileName.set("DiscordWhitelist-${project.version}.jar")
 }
 

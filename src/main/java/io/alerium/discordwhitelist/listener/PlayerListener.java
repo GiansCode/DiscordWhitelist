@@ -2,13 +2,14 @@ package io.alerium.discordwhitelist.listener;
 
 import io.alerium.discordwhitelist.WhitelistPlugin;
 import io.alerium.discordwhitelist.cache.CodeBuilder;
-import io.alerium.discordwhitelist.util.Replace;
+import io.alerium.discordwhitelist.util.ColorUtils;
+import io.alerium.discordwhitelist.util.ReplaceUtils;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 public final class PlayerListener implements Listener {
 
@@ -18,26 +19,25 @@ public final class PlayerListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerPreLogin(final AsyncPlayerPreLoginEvent event) {
         final UUID uuid = event.getUniqueId();
-
-        try {
-            if (plugin.getWhitelistProvider().isWhitelisted(uuid)) {
-                return;
-            }
-        } catch (final ExecutionException ex) {
-            ex.printStackTrace();
+        if (plugin.getWhitelistProvider().isWhitelisted(uuid)) {
+            return;
         }
 
-        final String code = CodeBuilder.getRandomCode("8");
-        event.setKickMessage(
-                String.join(" ", Replace.replaceList(
-                        plugin.getConfig().getStringList("messages.kickMessage"),
-                        "{code}", code)
-                )
-        );
-        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, "");
+        String code;
+        if (plugin.getRequestCache().getCodeAssociatedToUUID(uuid) != null) {
+            code = plugin.getRequestCache().getCodeAssociatedToUUID(uuid);
+        } else {
+            code = CodeBuilder.getRandomCode();
+        }
+
+        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "");
+        event.setKickMessage(ReplaceUtils.replaceString(
+                ColorUtils.colorize(plugin.getConfig().getString("messages.kickMessage")),
+                "{code}", code
+        ));
 
         plugin.getRequestCache().addCodeToCache(code, uuid);
     }

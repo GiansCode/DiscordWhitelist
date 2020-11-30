@@ -35,11 +35,10 @@ public final class CodeBuilder {
      * Constructs and returns a random String code
      * with the desired size
      *
-     * @param size  The size of returned code
      * @return      A random String code
      */
-    public static String getRandomCode(final String size) {
-        return getRandomCode(Integer.valueOf(size));
+    public static String getRandomCode() {
+        return getRandomCode(6);
     }
 
 }

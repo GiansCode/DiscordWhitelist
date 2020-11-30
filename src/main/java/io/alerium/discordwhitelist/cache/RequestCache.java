@@ -21,8 +21,8 @@ public final class RequestCache {
     /**
      * Adds a cache for a specific player to the cache
      *
-     * @param code              The player specific code
-     * @param playerIdentifier  Specified player's {@link UUID}
+     * @param code             The player specific code
+     * @param playerIdentifier Specified player's {@link UUID}
      */
     public void addCodeToCache(final String code, final UUID playerIdentifier) {
         this.cache.put(code, playerIdentifier);
@@ -32,8 +32,8 @@ public final class RequestCache {
      * Returns the {@link UUID} associated to the given code,
      * or null if there is none
      *
-     * @param code  Specified code in interest
-     * @return  Returns a {@link UUID} associated to specified code or null
+     * @param code Specified code in interest
+     * @return Returns a {@link UUID} associated to specified code or null
      */
     public UUID getUUIDAssociatedTo(final String code) {
         return this.cache.getIfPresent(code);
@@ -42,7 +42,7 @@ public final class RequestCache {
     /**
      * Invalidates desired code if it exists within the Cache
      *
-     * @param code  Code specified to be invalidated
+     * @param code Code specified to be invalidated
      */
     public void invalidateCode(final String code) {
         this.cache.invalidate(code);
@@ -65,6 +65,28 @@ public final class RequestCache {
                 this.cache.invalidate(code);
             }
         }
+    }
+
+    /**
+     * Returns the code associated to a specific UUID, or null if none
+     *
+     * @param uuid User's ID
+     * @return First code associated to that ID
+     */
+    public String getCodeAssociatedToUUID(final UUID uuid) {
+        final ConcurrentMap<String, UUID> cacheAsMap = this.cache.asMap();
+        String result = null;
+
+        for (final String code : cacheAsMap.keySet()) {
+            final UUID identifier = cacheAsMap.get(code);
+
+            if (identifier == uuid) {
+                result = code;
+                break;
+            }
+        }
+
+        return result;
     }
 
 }

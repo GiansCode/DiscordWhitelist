@@ -19,4 +19,11 @@ public final class KeyProvider {
         return this;
     }
 
+    public UUID getMinecraftUUID() {
+        return this.minecraftUUID;
+    }
+
+    public long getDiscordID() {
+        return this.discordID;
+    }
 }
