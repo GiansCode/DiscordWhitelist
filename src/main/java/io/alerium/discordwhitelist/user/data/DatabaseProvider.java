@@ -20,6 +20,8 @@ public final class DatabaseProvider implements DataFactory {
     private final WhitelistPlugin plugin;
     private final HikariDataSource dataSource;
 
+    private final String databaseName;
+
     public DatabaseProvider(final WhitelistPlugin plugin, final DiscordProvider discordProvider) {
         this.discordProvider = discordProvider;
         FileUtils.saveResources(plugin,
@@ -28,20 +30,18 @@ public final class DatabaseProvider implements DataFactory {
 
         this.dataSource = configureDataSource(plugin);
         this.plugin = plugin;
+        this.databaseName = getDatabaseName();
 
         setupDatabase();
     }
 
     private Connection getConnection() {
-        java.sql.Connection connection = null;
-
         try {
-            connection = dataSource.getConnection();
+            return dataSource.getConnection();
         } catch (final SQLException ex) {
             plugin.getLogger().log(Level.WARNING, "Failed to establish the database connection!");
+            return null;
         }
-
-        return connection;
     }
 
     private void setupDatabase() {
@@ -55,7 +55,7 @@ public final class DatabaseProvider implements DataFactory {
 
         try {
             final PreparedStatement tableCreationStatement = connection.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS `" + getDatabaseName() + "`.`users` (" +
+                    "CREATE TABLE IF NOT EXISTS `" + databaseName + "`.`users` (" +
                             "`uuid` CHAR(36) NOT NULL, " +
                             "`discordID` LONG NULL, " +
                             "`whitelistStatus` BOOLEAN NOT NULL, " +
@@ -83,7 +83,7 @@ public final class DatabaseProvider implements DataFactory {
 
         try {
             final PreparedStatement statement = connection.prepareStatement(
-                    "INSERT INTO `" + getDatabaseName() + "`.`users` (uuid, discordID, whitelistStatus, whitelistTime) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE discordID=?, whitelistStatus=?, whitelistTime=?;"
+                    "INSERT INTO `" + databaseName + "`.`users` (uuid, discordID, whitelistStatus, whitelistTime) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE discordID=?, whitelistStatus=?, whitelistTime=?;"
             );
 
             statement.setString(1, user.getMinecraftUUID().toString());
@@ -110,7 +110,7 @@ public final class DatabaseProvider implements DataFactory {
 
         try {
             final PreparedStatement statement = connection.prepareStatement(
-                    "SELECT * FROM `" + getDatabaseName() + "`.`users` WHERE uuid=?;"
+                    "SELECT * FROM `" + databaseName + "`.`users` WHERE uuid=?;"
             );
 
             statement.setString(1, uuid.toString());
@@ -142,7 +142,7 @@ public final class DatabaseProvider implements DataFactory {
 
         try {
             final PreparedStatement statement = connection.prepareStatement(
-                    "SELECT * FROM `" + getDatabaseName() + "`.`users` WHERE discordID=?;"
+                    "SELECT * FROM `" + databaseName + "`.`users` WHERE discordID=?;"
             );
 
             statement.setLong(1, discordID);

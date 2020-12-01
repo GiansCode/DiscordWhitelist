@@ -1,44 +1,62 @@
 package io.alerium.discordwhitelist.user;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import io.alerium.discordwhitelist.user.data.DataFactory;
+import io.alerium.discordwhitelist.user.data.DatabaseProvider;
 import io.alerium.discordwhitelist.user.provider.KeyProvider;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
 
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class WhitelistCache {
 
-    private final LoadingCache<KeyProvider, WhitelistUser> cache;
+    private final Map<KeyProvider, WhitelistUser> cache = new HashMap<>();
+    private final DatabaseProvider provider;
 
-    public WhitelistCache(final DataFactory dataFactory) {
-        this.cache = CacheBuilder.newBuilder()
-                .expireAfterAccess(3, TimeUnit.HOURS)
-                .build(
-                        new CacheLoader<KeyProvider, WhitelistUser>() {
-                            @Override
-                            public WhitelistUser load(final KeyProvider keyProvider) throws Exception {
-                                WhitelistUser user = null;
+    public WhitelistCache(final DatabaseProvider provider) {
+        this.provider = provider;
 
-                                if (keyProvider.getMinecraftUUID() != null) {
-                                    user = dataFactory.getUserByMinecraftUUID(keyProvider.getMinecraftUUID());
-                                }
-
-                                if (keyProvider.getDiscordID() != 0 && user == null) {
-                                    user = dataFactory.getUserByDiscordID(keyProvider.getDiscordID());
-                                }
-
-                                // Assign uuid upon retrieval
-                                return user != null ? user : new WhitelistUser(null);
-                            }
-                        }
-                );
     }
 
-    public LoadingCache<KeyProvider, WhitelistUser> getCache() {
-        return this.cache;
+    public WhitelistUser getWhitelistUser(final KeyProvider key) {
+        WhitelistUser user = null;
+
+        for (final KeyProvider userKey : this.cache.keySet()) {
+            if (key.getMinecraftUUID() != null && userKey.getMinecraftUUID() != null) {
+                if (key.getMinecraftUUID() == userKey.getMinecraftUUID()) {
+                    user = this.cache.get(userKey);
+                    break;
+                }
+            }
+
+            if (key.getDiscordID() != 0 && userKey.getDiscordID() != 0) {
+                if (key.getDiscordID() == userKey.getDiscordID()) {
+                    user = this.cache.get(userKey);
+                    break;
+                }
+            }
+
+        }
+
+        if (user == null) {
+            if (key.getMinecraftUUID() != null) {
+                user = provider.getUserByMinecraftUUID(key.getMinecraftUUID());
+            } else if (key.getDiscordID() != 0) {
+                user = provider.getUserByDiscordID(key.getDiscordID());
+            }
+        }
+
+        return user != null ? user : new WhitelistUser(null);
+    }
+
+    public void updateWhitelistUser(final WhitelistUser user) {
+        KeyProvider key = new KeyProvider().of(user.getMinecraftUUID());
+
+        if (user.getDiscordID() != 0) {
+            key.of(user.getDiscordID());
+        }
+
+        this.cache.put(key, user);
+        this.provider.setUser(user);
     }
 
 }
