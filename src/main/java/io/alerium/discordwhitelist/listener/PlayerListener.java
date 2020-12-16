@@ -5,6 +5,7 @@ import io.alerium.discordwhitelist.cache.CodeBuilder;
 import io.alerium.discordwhitelist.user.provider.WhitelistProvider;
 import io.alerium.discordwhitelist.util.ColorUtils;
 import io.alerium.discordwhitelist.util.ReplaceUtils;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,9 +16,11 @@ import java.util.UUID;
 public final class PlayerListener implements Listener {
 
     private final WhitelistPlugin plugin;
+    private final FileConfiguration config;
 
     public PlayerListener(final WhitelistPlugin plugin) {
         this.plugin = plugin;
+        this.config = plugin.getConfig();
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -37,7 +40,12 @@ public final class PlayerListener implements Listener {
         if (plugin.getRequestCache().getCodeAssociatedToUUID(uuid) != null) {
             code = plugin.getRequestCache().getCodeAssociatedToUUID(uuid);
         } else {
-            code = CodeBuilder.getRandomCode();
+
+
+            code = CodeBuilder.getRandomCode(
+                    config.getInt("settings.codeLength"),
+                    config.getString("settings.codeType")
+            );
         }
 
         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "");

@@ -21,11 +21,12 @@ public final class CodeBuilder {
      * @param size  The size of returned code
      * @return      A random String Code
      */
-    private static String getRandomCode(final int size) {
+    private static String getRandomCode(final String codeType, final int size) {
+        final String codeContent = CodeType.valueOfNotNullable(codeType).content;
         String result = "";
 
         for (int i = 0; i < size; i++) {
-            result = result.concat(String.valueOf(ALPHANUM.charAt(RANDOM.nextInt(ALPHANUM.length() - 1))));
+            result = result.concat(String.valueOf(codeContent.charAt(RANDOM.nextInt(codeContent.length() - 1))));
         }
 
         return result;
@@ -37,8 +38,35 @@ public final class CodeBuilder {
      *
      * @return      A random String code
      */
-    public static String getRandomCode() {
-        return getRandomCode(6);
+    public static String getRandomCode(final int length, final String codeType) {
+        return getRandomCode(codeType, length);
+    }
+
+    private enum CodeType {
+
+        ALPHABET(CodeBuilder.ALPHABET),
+        NUMERIC(CodeBuilder.NUMERAL),
+        ALPHANUMERIC(CodeBuilder.ALPHANUM);
+
+        final String content;
+
+        CodeType(final String content) {
+            this.content = content;
+        }
+
+        private static CodeType valueOfNotNullable(final String codeType) {
+            CodeType result = null;
+
+            for (final CodeType type : values()) {
+                if (type.name().equalsIgnoreCase(codeType)) {
+                    result = type;
+                    break;
+                }
+            }
+
+            return result != null ? result : CodeType.ALPHANUMERIC;
+        }
+
     }
 
 }

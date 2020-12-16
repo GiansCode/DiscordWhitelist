@@ -6,6 +6,8 @@ settings:
   messageDeletion: 4 # In seconds
   cacheExpiry: 5 # In minutes
   accessCacheExpiry: 5 # In minutes
+  codeType: ALPHANUMERIC
+  codeLength: 6
 
 messages:
   invalidArguments: "Please enter the Whitelist Code!"
