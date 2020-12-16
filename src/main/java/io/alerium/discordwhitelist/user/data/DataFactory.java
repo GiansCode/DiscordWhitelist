@@ -1,9 +1,6 @@
 package io.alerium.discordwhitelist.user.data;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,14 +12,6 @@ public interface DataFactory {
     WhitelistUser getUserByMinecraftUUID(final UUID uuid);
 
     WhitelistUser getUserByDiscordID(final long discordID);
-
-    default HikariDataSource configureDataSource(final JavaPlugin plugin) {
-        final HikariConfig config = new HikariConfig(
-                plugin.getDataFolder() + "/hikari.properties"
-        );
-
-        return new HikariDataSource(config);
-    }
 
     default Properties readPropertiesFile(final String fileName) {
         FileInputStream inputStream = null;

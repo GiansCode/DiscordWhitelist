@@ -58,7 +58,7 @@ public final class Placeholders extends PlaceholderExpansion {
             case "whitelist-time":
                 return formatNullable(new Date(user.getTimeWhitelisted()));
             case "discord-id":
-                return formatNullable(user.getDiscordID());
+                return formatNullable(user.getDiscordID() == 0 ? "Invalid Account" : user.getDiscordID());
             case "discord-name":
                 return formatNullable(user.getDiscordName());
             case "discord-discrim":

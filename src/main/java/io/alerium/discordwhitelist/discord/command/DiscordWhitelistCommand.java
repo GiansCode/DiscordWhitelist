@@ -70,9 +70,10 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
 
             final WhitelistUser user = new WhitelistUser(minecraftUserIdentifier);
 
-            user.setDiscordID(member.getIdLong(), guild);
+            user.setDiscordID(member.getIdLong());
             user.setWhitelistedStatus(true);
 
+            plugin.getWhitelistProvider().updateCachedUser(user);
             plugin.getWhitelistProvider().setWhitelisted(minecraftUserIdentifier, true);
             plugin.getRequestCache().invalidateUserCodes(minecraftUserIdentifier);
 

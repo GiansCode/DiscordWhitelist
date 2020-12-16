@@ -2,7 +2,6 @@ package io.alerium.discordwhitelist.user.provider;
 
 import io.alerium.discordwhitelist.Placeholders;
 import io.alerium.discordwhitelist.WhitelistPlugin;
-import io.alerium.discordwhitelist.discord.provider.DiscordProvider;
 import io.alerium.discordwhitelist.user.WhitelistCache;
 import io.alerium.discordwhitelist.user.data.DatabaseProvider;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
@@ -16,12 +15,11 @@ import java.util.UUID;
  */
 public final class WhitelistProvider {
 
-    private final DatabaseProvider databaseProvider;
     private final WhitelistCache whitelistCache;
 
-    public WhitelistProvider(final WhitelistPlugin plugin, final DiscordProvider discordProvider) {
-        this.databaseProvider = new DatabaseProvider(plugin, discordProvider);
-        this.whitelistCache = new WhitelistCache(databaseProvider);
+    public WhitelistProvider(final WhitelistPlugin plugin) {
+        final DatabaseProvider provider = new DatabaseProvider(plugin);
+        this.whitelistCache = new WhitelistCache(provider);
     }
 
     /**
@@ -32,10 +30,30 @@ public final class WhitelistProvider {
      */
     public boolean isWhitelisted(final UUID uuid) {
         final WhitelistUser user = this.whitelistCache.getWhitelistUser(new KeyProvider().of(uuid));
-        if (user != null)
-            return user.isWhitelisted();
+        if (user == null)
+            return false;
 
-        return false;
+        return user.isWhitelisted();
+    }
+
+    /**
+     * Returns a boolean status whether or not a user is valid
+     *
+     * @param uuid User's Minecraft UUID
+     * @return boolean (true/false) if the user is valid or not
+     */
+    public boolean isValidUser(final UUID uuid) {
+        try {
+            final WhitelistUser user = this.whitelistCache.getWhitelistUser(new KeyProvider().of(uuid));
+
+            if (user.getMinecraftUUID() != null)
+                return true;
+
+            user.setMinecraftUUID(uuid);
+            return true;
+        } catch (final Exception ex) {
+            return false;
+        }
     }
 
     /**
@@ -47,7 +65,6 @@ public final class WhitelistProvider {
      */
     public boolean setWhitelisted(final UUID uuid, final boolean status) {
         final KeyProvider key = new KeyProvider().of(uuid);
-
         final WhitelistUser user = this.whitelistCache.getWhitelistUser(key);
         if (user == null)
             return false;
@@ -58,6 +75,15 @@ public final class WhitelistProvider {
         this.whitelistCache.updateWhitelistUser(user);
         updateUserInPlaceholderCache(user);
         return true;
+    }
+
+    /**
+     * Updates the user to cache and database
+     *
+     * @param user Updated user
+     */
+    public void updateCachedUser(final WhitelistUser user) {
+        this.whitelistCache.updateWhitelistUser(user);
     }
 
     /**

@@ -16,7 +16,7 @@ public final class DiscordProvider {
 
     private final WhitelistPlugin plugin;
 
-    private Guild guild;
+    private static Guild guild;
     private TextChannel channel;
 
     private String commandPrefix;
@@ -43,7 +43,7 @@ public final class DiscordProvider {
         if (jdaProvider == null)
             throw new RuntimeException("The JDA was null, failed to continue initialization!");
 
-        this.guild = jdaProvider.getGuildById(config.getString("settings.guildId"));
+        guild = jdaProvider.getGuildById(config.getString("settings.guildId"));
         this.channel = jdaProvider.getTextChannelById(config.getString("settings.textChannelId"));
 
         this.commandPrefix = config.getString("settings.commandPrefix");
@@ -53,8 +53,8 @@ public final class DiscordProvider {
         );
     }
 
-    public Guild getLinkedGuild() {
-        return this.guild;
+    public static Guild getLinkedGuild() {
+        return guild;
     }
 
     public TextChannel getLinkedChannel() {

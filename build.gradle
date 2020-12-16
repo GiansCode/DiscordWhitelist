@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.alerium.discordwhitelist"
-version = "0.0.1-Alpha"
+version = "1.0.2-Alpha"
 
 repositories {
 	mavenCentral()
@@ -16,10 +16,13 @@ repositories {
 	maven { url "https://jcenter.bintray.com" }
 	maven { url "https://repo.mattstudios.me/artifactory/public" }
 	maven { url "https://dl.bintray.com/rest-faucet/maven" }
+
+	maven { url = "https://repo.aikar.co/content/groups/aikar/" }
 }
 
 dependencies {
 	implementation "net.dv8tion:JDA:4.2.0_222"
+	implementation "co.aikar:idb-core:1.0.0-SNAPSHOT"
 	implementation "com.zaxxer:HikariCP:3.4.5"
 	implementation "me.mattstudios:mf-msg-bukkit:2.0.2"
 	implementation "me.mattstudios.utils:matt-framework:1.4"
@@ -31,7 +34,10 @@ dependencies {
 
 shadowJar {
 	relocate "me.mattstudios.mf", "${group}.libs.mf"
+
 	relocate "com.zaxxer.hikari", "${group}.libs.hikari"
+	relocate "co.aikar.idb", "${group}.libs.hikari.idb"
+
 	relocate "net.dv8tion.jda", "${group}.libs.jda"
 
 	archiveFileName.set("DiscordWhitelist-${project.version}.jar")

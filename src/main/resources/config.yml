@@ -1,0 +1,18 @@
+settings:
+  token: <token>
+  guildId: 573153691306033153
+  textChannelId: 788772643787636758
+  commandPrefix: "-"
+  messageDeletion: 4 # In seconds
+  cacheExpiry: 5 # In minutes
+  accessCacheExpiry: 5 # In minutes
+
+messages:
+  invalidArguments: "Please enter the Whitelist Code!"
+  invalidCode: "The entered code does not exist!"
+  successfullyWhitelisted: "You have been successfully whitelisted!"
+  kickMessage: "\n\n&cPlease use the code &f&l{code} &cto get whitelisted!"
+  kickSelfMessage: "&7You are no longer whitelisted and have been kicked!"
+  notWhitelisted: "&8[&9Discord &bWhitelist&8] &cYou can not use this command as you are not whitelisted!"
+  whitelistRemove: "&8[&9Discord &bWhitelist&8] &fIf you wish to remove your whitelist, click this message."
+  onAccessTimeout: "\n\n&cYou are on Access Timeout! Please wait a few minutes before trying again."

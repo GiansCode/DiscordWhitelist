@@ -11,12 +11,10 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import rest.faucet.task.Tasks;
 
-import java.util.logging.Level;
-
 public final class WhitelistPlugin extends JavaPlugin {
 
     private final DiscordProvider discordProvider = new DiscordProvider(this);
-    private final WhitelistProvider whitelistProvider = new WhitelistProvider(this, discordProvider);
+    private final WhitelistProvider whitelistProvider = new WhitelistProvider(this);
 
     private final RequestCache requestCache = new RequestCache(this);
 
@@ -28,6 +26,7 @@ public final class WhitelistPlugin extends JavaPlugin {
         Bukkit.getServer().getPluginManager().registerEvents(
                 new PlayerListener(this), this
         );
+
         Bukkit.getServicesManager().register(WhitelistProvider.class, whitelistProvider, this, ServicePriority.Normal);
 
         final CommandManager manager = new CommandManager(this);
@@ -36,7 +35,6 @@ public final class WhitelistPlugin extends JavaPlugin {
         );
 
         new Placeholders(whitelistProvider).register();
-        getLogger().log(Level.INFO, "Initialized Plugin Successfully.");
     }
 
     @Override

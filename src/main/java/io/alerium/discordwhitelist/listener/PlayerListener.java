@@ -2,6 +2,7 @@ package io.alerium.discordwhitelist.listener;
 
 import io.alerium.discordwhitelist.WhitelistPlugin;
 import io.alerium.discordwhitelist.cache.CodeBuilder;
+import io.alerium.discordwhitelist.user.provider.WhitelistProvider;
 import io.alerium.discordwhitelist.util.ColorUtils;
 import io.alerium.discordwhitelist.util.ReplaceUtils;
 import org.bukkit.event.EventHandler;
@@ -21,8 +22,14 @@ public final class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerPreLogin(final AsyncPlayerPreLoginEvent event) {
+        final WhitelistProvider whitelistProvider = plugin.getWhitelistProvider();
         final UUID uuid = event.getUniqueId();
-        if (plugin.getWhitelistProvider().isWhitelisted(uuid)) {
+
+        if (!whitelistProvider.isValidUser(uuid)) {
+            whitelistProvider.setWhitelisted(uuid, false);
+        }
+
+        if (whitelistProvider.isWhitelisted(uuid)) {
             return;
         }
 
