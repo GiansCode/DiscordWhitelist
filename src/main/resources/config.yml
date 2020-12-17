@@ -8,6 +8,7 @@ settings:
   accessCacheExpiry: 5 # In minutes
   codeType: ALPHANUMERIC
   codeLength: 6
+  consoleLogFilter: "Please use the code"
 
 messages:
   invalidArguments: "Please enter the Whitelist Code!"
@@ -17,4 +18,4 @@ messages:
   kickSelfMessage: "&7You are no longer whitelisted and have been kicked!"
   notWhitelisted: "&8[&9Discord &bWhitelist&8] &cYou can not use this command as you are not whitelisted!"
   whitelistRemove: "&8[&9Discord &bWhitelist&8] &fIf you wish to remove your whitelist, click this message."
-  onAccessTimeout: "\n\n&cYou are on Access Timeout! Please wait a few minutes before trying again."
+  accountAlreadyLinked: "This discord account is already linked to an existing Minecraft Account!"

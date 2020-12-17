@@ -2,6 +2,7 @@ package io.alerium.discordwhitelist.bukkit.command;
 
 import io.alerium.discordwhitelist.WhitelistPlugin;
 import io.alerium.discordwhitelist.listener.event.DiscordUnWhitelistEvent;
+import io.alerium.discordwhitelist.user.provider.KeyProvider;
 import io.alerium.discordwhitelist.user.provider.WhitelistProvider;
 import io.alerium.discordwhitelist.util.ColorUtils;
 import me.clip.placeholderapi.libs.JSONMessage;
@@ -55,7 +56,7 @@ public final class WhitelistRemoveCommand extends CommandBase {
 
         player.kickPlayer(ColorUtils.colorize(config.getString("messages.kickSelfMessage")));
         Bukkit.getServer().getPluginManager().callEvent(new DiscordUnWhitelistEvent(
-                provider.getWhitelistUserByUUID(uuid)
+                provider.getWhitelistUserByKeyProvider(new KeyProvider().of(uuid))
         ));
     }
 

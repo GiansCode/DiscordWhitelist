@@ -80,7 +80,7 @@ public final class RequestCache {
         for (final String code : cacheAsMap.keySet()) {
             final UUID identifier = cacheAsMap.get(code);
 
-            if (identifier == uuid) {
+            if (uuid.toString().equalsIgnoreCase(identifier.toString())) {
                 result = code;
                 break;
             }

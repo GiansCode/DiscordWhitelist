@@ -36,19 +36,16 @@ public final class PlayerListener implements Listener {
             return;
         }
 
-        String code;
-        if (plugin.getRequestCache().getCodeAssociatedToUUID(uuid) != null) {
-            code = plugin.getRequestCache().getCodeAssociatedToUUID(uuid);
-        } else {
+        String code = plugin.getRequestCache().getCodeAssociatedToUUID(uuid);
 
-
+        if (code == null) {
             code = CodeBuilder.getRandomCode(
                     config.getInt("settings.codeLength"),
                     config.getString("settings.codeType")
             );
         }
 
-        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "");
+        event.setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
         event.setKickMessage(ReplaceUtils.replaceString(
                 ColorUtils.colorize(plugin.getConfig().getString("messages.kickMessage")),
                 "{code}", code

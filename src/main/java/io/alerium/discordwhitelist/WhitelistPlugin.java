@@ -17,6 +17,7 @@ public final class WhitelistPlugin extends JavaPlugin {
     private final WhitelistProvider whitelistProvider = new WhitelistProvider(this);
 
     private final RequestCache requestCache = new RequestCache(this);
+    private final Placeholders placeholders = new Placeholders(whitelistProvider);
 
     @Override
     public void onEnable() {
@@ -28,18 +29,20 @@ public final class WhitelistPlugin extends JavaPlugin {
         );
 
         Bukkit.getServicesManager().register(WhitelistProvider.class, whitelistProvider, this, ServicePriority.Normal);
-
         final CommandManager manager = new CommandManager(this);
         manager.register(
                 new WhitelistRemoveCommand(this)
         );
 
-        new Placeholders(whitelistProvider).register();
+        this.placeholders.register();
+        //getLogger().setFilter(new ConsoleFilter(this));
     }
 
     @Override
     public void onDisable() {
         reloadConfig();
+
+        this.placeholders.unregister();
     }
 
     public WhitelistProvider getWhitelistProvider() {

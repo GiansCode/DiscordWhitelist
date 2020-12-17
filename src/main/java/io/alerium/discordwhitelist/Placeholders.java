@@ -1,5 +1,6 @@
 package io.alerium.discordwhitelist;
 
+import io.alerium.discordwhitelist.user.provider.KeyProvider;
 import io.alerium.discordwhitelist.user.provider.WhitelistProvider;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -43,7 +44,7 @@ public final class Placeholders extends PlaceholderExpansion {
         if (PLACEHOLDER_USER_CACHE.get(uuid) != null) {
             user = PLACEHOLDER_USER_CACHE.get(uuid);
         } else {
-            user = whitelistProvider.getWhitelistUserByUUID(uuid);
+            user = whitelistProvider.getWhitelistUserByKeyProvider(new KeyProvider().of(uuid));
 
             PLACEHOLDER_USER_CACHE.put(uuid, user);
         }

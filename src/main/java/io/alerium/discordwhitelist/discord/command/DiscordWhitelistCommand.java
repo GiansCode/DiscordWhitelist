@@ -3,6 +3,7 @@ package io.alerium.discordwhitelist.discord.command;
 import io.alerium.discordwhitelist.WhitelistPlugin;
 import io.alerium.discordwhitelist.discord.provider.DiscordProvider;
 import io.alerium.discordwhitelist.listener.event.DiscordWhitelistEvent;
+import io.alerium.discordwhitelist.user.provider.KeyProvider;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.*;
@@ -68,8 +69,18 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
                 return;
             }
 
-            final WhitelistUser user = new WhitelistUser(minecraftUserIdentifier);
+            if (!isValidDiscordAccount(member.getIdLong(), minecraftUserIdentifier)) {
+                final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.accountAlreadyLinked")).build();
+                sendAndDeleteAfter(eventMessage, msg, channel);
+                return;
+            }
 
+            WhitelistUser user = plugin.getWhitelistProvider().getWhitelistUserByKeyProvider(new KeyProvider().of(minecraftUserIdentifier));
+            if (user == null) {
+                user = new WhitelistUser(minecraftUserIdentifier);
+            }
+
+            user.setMinecraftUUID(minecraftUserIdentifier);
             user.setDiscordID(member.getIdLong());
             user.setWhitelistedStatus(true);
 
@@ -77,15 +88,26 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
             plugin.getWhitelistProvider().setWhitelisted(minecraftUserIdentifier, true);
             plugin.getRequestCache().invalidateUserCodes(minecraftUserIdentifier);
 
-            task.sync();
+            final WhitelistUser finalUser = user;
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () ->
-                            Bukkit.getServer().getPluginManager().callEvent(new DiscordWhitelistEvent(user))
-                    , 0);
+                    Bukkit.getServer().getPluginManager().callEvent(new DiscordWhitelistEvent(finalUser))
+            , 0);
 
-            task.async();
             final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.successfullyWhitelisted")).build();
             sendAndDeleteAfter(eventMessage, msg, channel);
         });
+    }
+
+    private boolean isValidDiscordAccount(final long id, final UUID uuid) {
+        final WhitelistUser user = plugin.getWhitelistProvider().getWhitelistUserByKeyProvider(new KeyProvider().of(id));
+        if (user == null)
+            return true;
+
+        final UUID minecraftUUID = user.getMinecraftUUID();
+        if (minecraftUUID == null)
+            return true;
+
+        return minecraftUUID.toString().equalsIgnoreCase(uuid.toString());
     }
 
     private void sendAndDeleteAfter(final Message eventMessage, final Message message, final TextChannel channel) {

@@ -41,7 +41,7 @@ public final class DiscordProvider {
         }
 
         if (jdaProvider == null)
-            throw new RuntimeException("The JDA was null, failed to continue initialization!");
+            throw new RuntimeException("The JDA was null, failed to continue initialization! (Please ensure valid Bot Token)");
 
         guild = jdaProvider.getGuildById(config.getString("settings.guildId"));
         this.channel = jdaProvider.getTextChannelById(config.getString("settings.textChannelId"));

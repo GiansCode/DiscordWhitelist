@@ -167,11 +167,11 @@ public final class WhitelistProvider {
     /**
      * Returns the WhitelistUser object for given user, or null
      *
-     * @param minecraftUUID User's Minecraft UUID
+     * @param keyProvider Desired users KeyProvider (constructed either from discord id, or minecraft uuid)
      * @return The WhitelistUser object for specified user or null
      */
-    public WhitelistUser getWhitelistUserByUUID(final UUID minecraftUUID) {
-        final WhitelistUser user = this.whitelistCache.getWhitelistUser(new KeyProvider().of(minecraftUUID));
+    public WhitelistUser getWhitelistUserByKeyProvider(final KeyProvider keyProvider) {
+        final WhitelistUser user = this.whitelistCache.getWhitelistUser(keyProvider);
         if (user != null)
             return user;
 
