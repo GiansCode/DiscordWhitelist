@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.alerium.discordwhitelist"
-version = "1.0.5-Alpha"
+version = "1.0.6-Alpha"
 
 repositories {
 	mavenCentral()

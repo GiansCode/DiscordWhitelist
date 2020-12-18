@@ -8,7 +8,8 @@ settings:
   accessCacheExpiry: 5 # In minutes
   codeType: ALPHANUMERIC
   codeLength: 6
-  consoleLogFilter: "Please use the code"
+  timeFormat: "{week-day} {month} {day} {time}"
+  # Placeholders: {week-day} {month} {day} {time} {timezone} {year}
 
 messages:
   invalidArguments: "Please enter the Whitelist Code!"

@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 import javax.security.auth.login.LoginException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class DiscordProvider {
 
@@ -28,6 +29,7 @@ public final class DiscordProvider {
 
     @SuppressWarnings("ConstantConditions")
     public void initiateBot() {
+        final Logger logger = plugin.getLogger();
         final FileConfiguration config = plugin.getConfig();
         JDA jdaProvider = null;
 
@@ -36,12 +38,16 @@ public final class DiscordProvider {
                     .setStatus(OnlineStatus.ONLINE)
                     .build().awaitReady();
         } catch (final LoginException | InterruptedException ex) {
-            plugin.getLogger().log(Level.WARNING, "Discord bot was unable to start! Please verify the bot token is correct.");
+            logger.log(Level.SEVERE, "Discord bot was unable to start! Please verify the bot token is correct.");
             plugin.getPluginLoader().disablePlugin(plugin);
         }
 
-        if (jdaProvider == null)
-            throw new RuntimeException("The JDA was null, failed to continue initialization! (Please ensure valid Bot Token)");
+        if (jdaProvider == null) {
+            logger.log(Level.SEVERE, "The plugin failed to initialize due to: JDA Provider was null!");
+            logger.log(Level.SEVERE, "(Ensure that the entered Bot Token is valid!)");
+            plugin.getPluginLoader().disablePlugin(plugin);
+            return;
+        }
 
         guild = jdaProvider.getGuildById(config.getString("settings.guildId"));
         this.channel = jdaProvider.getTextChannelById(config.getString("settings.textChannelId"));

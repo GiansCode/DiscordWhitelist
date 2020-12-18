@@ -3,6 +3,7 @@ package io.alerium.discordwhitelist;
 import io.alerium.discordwhitelist.user.provider.KeyProvider;
 import io.alerium.discordwhitelist.user.provider.WhitelistProvider;
 import io.alerium.discordwhitelist.user.provider.wrapper.WhitelistUser;
+import io.alerium.discordwhitelist.util.ReplaceUtils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -15,10 +16,14 @@ import java.util.UUID;
 public final class Placeholders extends PlaceholderExpansion {
 
     private static final Map<UUID, WhitelistUser> PLACEHOLDER_USER_CACHE = new HashMap<>();
-    private final WhitelistProvider whitelistProvider;
 
-    Placeholders(final WhitelistProvider provider) {
+    private final WhitelistProvider whitelistProvider;
+    private final String timeFormat;
+
+    Placeholders(final WhitelistPlugin plugin, final WhitelistProvider provider) {
         this.whitelistProvider = provider;
+
+        this.timeFormat = plugin.getConfig().getString("settings.timeFormat");
     }
 
     @Override
@@ -46,18 +51,23 @@ public final class Placeholders extends PlaceholderExpansion {
         } else {
             user = whitelistProvider.getWhitelistUserByKeyProvider(new KeyProvider().of(uuid));
 
-            PLACEHOLDER_USER_CACHE.put(uuid, user);
+            updateUser(user);
         }
 
-        if (user == null) {
-            return null;
+        if (user == null) return null;
+        if (user.getDiscordName() == null) {
+
+            user.getDiscordName();
+            user.getDiscordDiscriminator();
+
+            updateUser(user);
         }
 
         switch (params.toLowerCase()) {
             case "whitelist-status":
                 return formatNullable(formatBoolean(user.isWhitelisted()));
             case "whitelist-time":
-                return formatNullable(new Date(user.getTimeWhitelisted()));
+                return formatNullable(getFormattedTime(new Date(user.getTimeWhitelisted())));
             case "discord-id":
                 return formatNullable(user.getDiscordID() == 0 ? "Invalid Account" : user.getDiscordID());
             case "discord-name":
@@ -67,6 +77,21 @@ public final class Placeholders extends PlaceholderExpansion {
         }
 
         return null;
+    }
+
+    private String getFormattedTime(final Date date) {
+        final String dateString = date.toString();
+        final String[] dateComponents = dateString.split(" ");
+
+        return ReplaceUtils.replaceString(
+                timeFormat,
+                "{week-day}", dateComponents[0],
+                "{month}", dateComponents[1],
+                "{day}", dateComponents[2],
+                "{time}", dateComponents[3],
+                "{timezone}", dateComponents[4],
+                "{year}", dateComponents[5]
+        );
     }
 
     private String formatNullable(final Object object) {

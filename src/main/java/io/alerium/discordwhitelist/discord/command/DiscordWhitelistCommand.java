@@ -63,14 +63,14 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
             final String enteredCode = arguments[1];
             final UUID minecraftUserIdentifier = this.plugin.getRequestCache().getUUIDAssociatedTo(enteredCode);
 
-            if (minecraftUserIdentifier == null) {
-                final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.invalidCode")).build();
+            if (!isValidDiscordAccount(member.getIdLong(), minecraftUserIdentifier)) {
+                final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.accountAlreadyLinked")).build();
                 sendAndDeleteAfter(eventMessage, msg, channel);
                 return;
             }
 
-            if (!isValidDiscordAccount(member.getIdLong(), minecraftUserIdentifier)) {
-                final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.accountAlreadyLinked")).build();
+            if (minecraftUserIdentifier == null) {
+                final Message msg = new MessageBuilder(plugin.getConfig().getString("messages.invalidCode")).build();
                 sendAndDeleteAfter(eventMessage, msg, channel);
                 return;
             }
@@ -106,6 +106,9 @@ public final class DiscordWhitelistCommand extends ListenerAdapter {
         final UUID minecraftUUID = user.getMinecraftUUID();
         if (minecraftUUID == null)
             return true;
+
+        if (uuid == null)
+            return false;
 
         return minecraftUUID.toString().equalsIgnoreCase(uuid.toString());
     }

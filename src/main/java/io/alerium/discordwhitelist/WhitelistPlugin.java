@@ -17,7 +17,7 @@ public final class WhitelistPlugin extends JavaPlugin {
     private final WhitelistProvider whitelistProvider = new WhitelistProvider(this);
 
     private final RequestCache requestCache = new RequestCache(this);
-    private final Placeholders placeholders = new Placeholders(whitelistProvider);
+    private final Placeholders placeholders = new Placeholders(this, whitelistProvider);
 
     @Override
     public void onEnable() {

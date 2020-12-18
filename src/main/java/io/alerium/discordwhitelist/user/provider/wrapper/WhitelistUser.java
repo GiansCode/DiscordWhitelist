@@ -49,8 +49,7 @@ public final class WhitelistUser {
 
     public void setDiscordID(final long id) {
         this.discordID = id;
-
-        final Member member = DiscordProvider.getLinkedGuild().getMemberById(id);
+        final Member member = DiscordProvider.getLinkedGuild().retrieveMemberById(discordID).complete();
 
         if (member == null) return;
         this.discordName = member.getUser().getName();
@@ -59,7 +58,7 @@ public final class WhitelistUser {
 
     public String getDiscordDiscriminator() {
         if (discordDiscrim == null) {
-            final Member member = DiscordProvider.getLinkedGuild().getMemberById(discordID);
+            final Member member = DiscordProvider.getLinkedGuild().retrieveMemberById(discordID).complete();
 
             if (member != null) {
                 this.discordDiscrim = member.getUser().getAsTag();
@@ -71,7 +70,7 @@ public final class WhitelistUser {
 
     public String getDiscordName() {
         if (discordName == null) {
-            final Member member = DiscordProvider.getLinkedGuild().getMemberById(discordID);
+            final Member member = DiscordProvider.getLinkedGuild().retrieveMemberById(discordID).complete();
 
             if (member != null) {
                 this.discordName = member.getUser().getName();
