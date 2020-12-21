@@ -1,5 +1,8 @@
 settings:
   token: <token>
+  onlineStatus: ONLINE
+  activity: WATCHING
+  activityMessage: "*Gian's 4Head*"
   guildId: 573153691306033153
   textChannelId: 788772643787636758
   commandPrefix: "-"

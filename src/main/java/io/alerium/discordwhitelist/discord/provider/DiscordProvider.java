@@ -5,6 +5,7 @@ import io.alerium.discordwhitelist.discord.command.DiscordWhitelistCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -35,7 +36,8 @@ public final class DiscordProvider {
 
         try {
             jdaProvider = JDABuilder.createDefault(config.getString("settings.token"))
-                    .setStatus(OnlineStatus.ONLINE)
+                    .setStatus(OnlineStatus.valueOf(config.getString("settings.onlineStatus", "ONLINE").toUpperCase()))
+                    .setActivity(Activity.of(Activity.ActivityType.valueOf(config.getString("settings.activity")), config.getString("settings.activityMessage")))
                     .build().awaitReady();
         } catch (final LoginException | InterruptedException ex) {
             logger.log(Level.SEVERE, "Discord bot was unable to start! Please verify the bot token is correct.");
