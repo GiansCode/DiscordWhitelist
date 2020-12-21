@@ -25,13 +25,15 @@ dependencies {
 	implementation "me.mattstudios:mf-msg-bukkit:2.0.2"
 	implementation("rest.faucet:task:1.0") { exclude group: "org.spigotmc" }
 
-	implementation "net.dv8tion:JDA:4.2.0_222"
+	implementation("net.dv8tion:JDA:4.2.0_222") { exclude module: "opus-java" }
 
 	compileOnly "me.clip:placeholderapi:2.10.9"
 	compileOnly "com.destroystokyo.paper:paper-api:1.16.4-R0.1-SNAPSHOT"
 }
 
 shadowJar {
+	minimize()
+
 	relocate "me.mattstudios.mf", "${group}.libs.mf"
 
 	relocate "com.zaxxer.hikari", "${group}.libs.hikari"
